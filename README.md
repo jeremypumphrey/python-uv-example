@@ -7,8 +7,8 @@ Install requirements:
 
 1) Run `uv init repo-name` to initialize a new project directory
 
-2) Run `uv python install 3.14` to install a specific version of python
-    `uv python pin 3.14` to pin that version
+2) Run `uv python install 3.14` to install a specific version of python  
+    `uv python pin 3.14` to pin that version  
     `uv python upgrade 3.14` to get upgrade to latest supported versions
 
 3) Use Broad dependencies in `pyproject.toml` only pinned to Major versions using `~=major.minor`. Human editable, but easiest with `uv add xyz`  
