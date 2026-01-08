@@ -17,9 +17,9 @@ Install requirements:
 >    "numpy~=2.4",
 
 4) Run `uv lock --upgrade --exclude-newer "5 days"` to create `uv.lock` with specific version locks and SHA package validation, updated but all older than 5 days from today, rerun when you want to update. Never edit manually.  
->version = "2.4.0"
->source = { registry = "https://pypi.org/simple" }
->sdist = { url = "https://files.pythonhosted.org/packages/a4/7a/6a3d14e205d292b738db449d0de649b373a59edb0d0b4493821d0a3e8718/numpy-2.4.0.tar.gz", hash = "sha256:6e504f7b16118198f138ef31ba24d985b124c2c469fe8467007cf30fd992f934", size = 20685720, upload-time = "2025-12-20T16:18:19.023Z" }
+>version = "2.4.0"  
+>source = { registry = "https://pypi.org/simple" }  
+>sdist = { url = "https://files.pythonhosted.org/packages/a4/7a/6a3d14e205d292b738db449d0de649b373a59edb0d0b4493821d0a3e8718/numpy-2.4.0.tar.gz", hash = "sha256:6e504f7b16118198f138ef31ba24d985b124c2c469fe8467007cf30fd992f934", size = 20685720, upload-time = "2025-12-20T16:18:19.023Z" }  
 
 5) Run `uv sync --frozen --reinstall` installs packages from frozen lockfile forcing reinstall if needed
 
