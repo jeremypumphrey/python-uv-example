@@ -12,7 +12,7 @@ Install requirements:
     `uv python upgrade 3.14` to get upgrade to latest supported versions
 
 3) Use Broad dependencies in `pyproject.toml` only pinned to Major versions using `~=major.minor`. Human editable, but easiest with `uv add xyz`  
-`uv add numpy~=2.4`  
+`uv add numpy~=2.4`  foo~=1.2 is equal to foo>=1.2,<2
 >  dependencies = [  
 >    "numpy~=2.4",
 
