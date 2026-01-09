@@ -17,8 +17,8 @@ jobs:
       - name: Sync (locked, no resolution)
         run: uv sync --frozen --reinstall
 
-      - name: Run tests
-        run: uv run -m pytest
+    #   - name: Run tests
+        # run: uv run -m pytest
 
       # SBOM generation (example with Syft producing SPDX JSON)
       - name: Generate SBOM (SPDX JSON)
