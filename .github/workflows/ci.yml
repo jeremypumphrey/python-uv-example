@@ -26,15 +26,29 @@ jobs:
             curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
             syft dir:. -o spdx-json=sbom.spdx.json
 
-      # Option A: Scan SBOM with OSV-Scanner (SBOM mode)
-      - name: OSV-Scanner (lockfile/SBOM scan)
-        uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2
+      - uses: actions/setup-go@v5
         with:
-            # Example: scan recursively from repo root
-            scan-args: |
-                --recursive
-                ./
-                fail-on-vuln: true
+            go-version: "1.23.5"
+
+      - name: Install osv-scanner (from source)
+        run: |
+            go install github.com/google/osv-scanner/v2/cmd/osv-scanner@latest
+            echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Scan SBOM (example)
+        run: |
+            osv-scanner --sbom=sbom.spdx.json --format=json > osv-report.json
+
+
+      # Option A: Scan SBOM with OSV-Scanner (SBOM mode)
+    #   - name: OSV-Scanner (lockfile/SBOM scan)
+    #     uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2
+    #     with:
+    #         # Example: scan recursively from repo root
+    #         scan-args: |
+    #             --recursive
+    #             ./
+    #             fail-on-vuln: true
 
       # Option B: Scan SBOM with Grype (if you prefer)
       # - name: Vulnerability scan (Grype)
