@@ -1,104 +1,179 @@
 # Python / uv Tool
 
 ## Overview
-Example Python project using uv with:
-- Version locking
-- SHA-based package integrity
-- Minimum package age constraints
-
-This setup helps reduce supply-chain risk (e.g., registry compromises like the recent Shai-Hulud incident).
+The UV is known to have these features: version locking, SHA-based package integrity, Minimum package age constraints
+It helps reduce supply-chain risk (e.g., registry compromises like the recent Shai-Hulud incident)...
 
 ## Install
-Install uv (macOS, easiest option):
+`brew install uv`: to install on macOS. 
 
-brew install uv
+`pip instal uv`: to install using python/pip 
 
-## Initialize Repository
-1. Initialize a new project:
+## Initialization 
+`uv init <project-name>`: create project and a file named pyproject.toml You can also use `uv init` in current folder to
+do the same. 
 
-uv init repo-name
+Sample pyproject.toml file. 
+```text
+[project]
+name = "my-uv-project"
+version = "0.1.0"
+description = "Sample project using uv for dependency management"
+authors = ["Your Name <you@example.com>"]
+requires-python = ">=3.14,<3.15"
 
-This creates a new project directory with a pyproject.toml.
+[tool.uv]
+# Python version for the project environment
+python = "3.14"
 
-## Python Version
-2. Install and manage a specific Python version:
+[tool.uv.dependencies]
+# Packages with version constraints
+numpy = "~=2.4"           # Compatible with 2.4.*, <3.0
+requests = "^3.0"         # Compatible with 3.0.*, <4.0
+pandas = ">=2.0,<2.5"     # At least 2.0, but less than 2.5
 
-uv python install 3.14
-uv python pin 3.14
-uv python upgrade 3.14
+[tool.uv.dev-dependencies]
+# Dev-only packages
+pytest = "^8.0"           # Latest 8.x for testing
+black = "~=24.0"          # Latest 24.x for formatting
 
-- install downloads the version
-- pin locks the project to that version
-- upgrade updates to the latest supported patch release
+[build-system]
+requires = ["uv>=1.0"]    # uv itself is required to build/manage this project
+build-backend = "uv.build"
+```
 
-## Dependencies
-3. Declare broad dependencies in pyproject.toml, pinned only to major/minor versions using ~=.
+## Manage Python Version
+`uv python install 3.14`: create a virtual environment for this project using Python 3.14.
 
-These files should be human-editable, but the easiest approach is using uv add:
+`uv python pin 3.14`: locks the environment to exactly Python 3.14. 
 
-uv add numpy~=2.4
+`uv python upgrade 3.14`: upgrade the project environment’s Python to the latest 3.14.x version available.
 
-Equivalent specifier behavior:
-- foo~=1.2 → foo>=1.2,<2.0
+##  Virtual Environment 
+UV will create ./venv, the environment folder as needed, for example, the first time you issue command `uv add`. 
 
-Example pyproject.toml entry:
+However, UV never activates a virtual environment in your shell, only running command `source .venv/bin/activate` will activate the 
+virtual environment. 
 
-dependencies = [
-  "numpy~=2.4",
-]
+The only times you need to activate a virtual environment is when you use `pip` 
+instead of `uv pip`, use `python` instead of `uv run python`. 
 
-## Version Locking
-4. Generate a lockfile with exact versions, hashes, and minimum package age:
 
-uv lock --upgrade --exclude-newer "5 days"
+## Install Packages
 
-This creates uv.lock with:
-- Fully pinned versions
-- SHA-256 hashes
-- Registry source information
-- Only packages published at least 5 days ago
+### Install (using pyproject.toml)
+`uv install`: install all packages from tool.uv.dependencies under pyproject.toml to <project-root>/.venv/. 
 
-Never edit uv.lock manually.
+`uv install --dev`: install all packages from tool.uv.dev-dependencies under pyproject.toml. Yes, you can manually 
+create or edit tool.uv.dev-dependencies section. 
 
-Example lock entry:
+### Install (using uv add)
+`uv add <package>`:  to install package to <project-root>/.venv/.
 
-version = "2.4.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = {
-  url = "https://files.pythonhosted.org/packages/.../numpy-2.4.0.tar.gz",
-  hash = "sha256:6e504f7b16118198f138ef31ba24d985b124c2c469fe8467007cf30fd992f934",
-  size = 20685720,
-  upload-time = "2025-12-20T16:18:19.023Z"
-}
+`uv add numpy~=2.4`: install the latest version of numpy that is compatible with 2.4, i.e., >=2.4.0 and <3.0.0. 
 
-Re-run uv lock whenever you want to update dependencies.
+### Install (using uv pip install)
+`uv pip install`: to use pip install packages(s) to where python/pip is located.  Be aware, you do not need to run 
+`uv init` to use this command. Below is a full command example. 
 
-## Install From Lockfile
-5. Install dependencies strictly from the lockfile:
+```
+uv pip install -r requirements.txt --target ./dependencies --python "$(which python)"  --exclude-newer "$(date -u -v-7d +%Y-%m-%d)"
+```
 
-uv sync --frozen --reinstall
+`--python`  specifics the python interpreter location, it could be from a virtual environment. If you omit this option, 
+you will need to be under ./venv environment, created by uv in some forms. 
 
-This:
-- Installs only versions in uv.lock
-- Verifies SHA hashes
-- Forces reinstallation if necessary
+`--exclude-newer` specifics to avoid packages got updated in the last 7 days. 
 
-## Security Audit
-6. Audit locked dependencies for known vulnerabilities:
 
-uv pip audit --locked
+## Manage Package Versions
 
-Note: This may not work reliably yet.
+### uv.lock file 
+Upon the following commands, `uv.lock` file is created. 
 
-## Version Control
-7. Commit the uv.lock file to your repository.
+```text
+uv install             # Install all dependencies from pyproject.toml
+uv add numpy~=2.4      # Adds a new package, updates lockfile
+uv python install      # Installing Python may trigger lockfile creation
+uv lock                # Explicitly locks versions
+```
+
+Sample uv.lock file 
+```text
+# uv.lock
+
+[metadata]
+generated = "2026-01-13T12:00:00Z"
+uv-version = "1.5.0"
+
+[python]
+version = "3.14.2"
+hash = "sha256:abc123def456..."  # Optional, ensures exact interpreter
+
+[packages]
+numpy = { version = "2.5.3", hash = "sha256:xyz789..." }
+requests = { version = "3.0.1", hash = "sha256:lmn456..." }
+pandas = { version = "2.4.1", hash = "sha256:opq987..." }
+
+[dev-packages]
+pytest = { version = "8.0.2", hash = "sha256:rty321..." }
+black = { version = "24.0.1", hash = "sha256:uvw654..." }
+
+[constraints]
+# These are your .toml constraints, recorded for reference
+numpy = "~=2.4"
+requests = "^3.0"
+pandas = ">=2.0,<2.5"
+pytest = "^8.0"
+black = "~=24.0"
+
+```
+
+### uv lock command 
+`uv lock --upgrade --exclude-newer "5 days"`: generates or updates the lockfile, resolves all dependencies and Python 
+version according to your pyproject.toml constraints, stores the exact versions to ensure reproducibility across 
+machines and CI. 
+
+`--exclude-newer "5 days"`: use packages published at least 5 days ago. 
+
+`--upgrade tells uv`:  to look for newer versions of all dependencies allowed by your constraints in pyproject.toml and 
+update the lockfile (uv.lock) with them.
+
+
+
+### uv sync command 
+`uv sync --frozen --reinstall`: synchronizes your project environment with the lockfile (uv.lock). 
+
+`--frozen`: tell uv not to change the lockfile. 
+
+`--reinstall`:  forces uv to reinstall all packages in the environment. 
+
+## Audit 
+`uv pip audit --locked`: runs a security audit of your Python packages to check for known vulnerabilities in installed 
+packages. Also, you do not need to activate virtual environment for this command. 
+
+
+`--locked`: tells uv to audit exactly the versions listed in uv.lock, ignoring anything in pyproject.toml or the 
+current venv. 
+
+Example output. 
+```text
+Auditing locked dependencies...
+
+Package    Version    Vulnerability ID      Severity
+----------------------------------------------------
+requests   3.0.1      PYSEC-2025-001      HIGH
+numpy      2.5.3      None                 OK
+pandas     2.4.1      None                 OK
+
+Audit complete: 1 vulnerability found
+```
+
+## Run Script
+`uv run python example.py`: this will run the python script example.py 
+
 
 ## CI/CD
-8. Use uv in CI/CD pipelines (GitHub Actions example):
-
+Use uv in CI/CD pipelines (GitHub Actions example):
 https://docs.astral.sh/uv/guides/integration/github/#using-uv-in-github-actions
 
-## Run the Project
-Execute your code with:
-
-uv run example.py
