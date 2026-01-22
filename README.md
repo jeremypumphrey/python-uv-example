@@ -177,3 +177,12 @@ Audit complete: 1 vulnerability found
 Use uv in CI/CD pipelines (GitHub Actions example):
 https://docs.astral.sh/uv/guides/integration/github/#using-uv-in-github-actions
 
+# Repo Upgrade Process
+The basic ideas is to install `uv`, and then replace `pip` with 'uv pip' using the --python option.  See below for examples. Full example is at https://github.com/BIAD/nci-aml-lambdas/blob/master/.github/workflows/main.yml. 
+
+```
+pip install uv
+uv pip install -r requirements.txt --python "$(which python)"  --exclude-newer "$(date -u -d '4 days ago' +%Y-%m-%d)"
+uv pip freeze --python "$(which python)"
+uv pip install -r requirements-unit-test.txt --python "$(which python)"
+```
